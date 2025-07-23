@@ -133,7 +133,6 @@ export function useManutencoes() {
       throw error;
     }
   };
-  };
 
   const concluirManutencao = async (id: string) => {
     try {
