@@ -122,13 +122,13 @@ export const VisitasPage = () => {
           </h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-gray-500" />
-            <h3 className="text-lg font-medium text-gray-900">Filtros</h3>
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">Filtros</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
             <div>
               <SearchBar
                 value={searchTerm}
@@ -141,7 +141,7 @@ export const VisitasPage = () => {
               <select
                 value={filtroEmpreendimento}
                 onChange={(e) => setFiltroEmpreendimento(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="">Todos os Empreendimentos</option>
                 {empreendimentos.map(emp => (
@@ -155,7 +155,7 @@ export const VisitasPage = () => {
                 <select
                   value={filtroCorretor}
                   onChange={(e) => setFiltroCorretor(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 >
                   <option value="">Todos os Gerentes</option>
                   {gerentes.map(gerente => (
@@ -171,7 +171,7 @@ export const VisitasPage = () => {
                 value={filtroDataInicio}
                 onChange={(e) => setFiltroDataInicio(e.target.value)}
                 placeholder="Data início"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
 
@@ -181,7 +181,7 @@ export const VisitasPage = () => {
                 value={filtroDataFim}
                 onChange={(e) => setFiltroDataFim(e.target.value)}
                 placeholder="Data fim"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
           </div>
@@ -197,7 +197,7 @@ export const VisitasPage = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {visitasFiltradas.map((visita) => (
             <VisitaCard
               key={visita.id}

@@ -132,16 +132,16 @@ export function ManutencoesPage() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
             {isAdmin ? 'Manutenções' : 'Minhas Solicitações de Manutenção'}
           </h1>
           {!isAdmin && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors shadow-sm"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors shadow-sm text-sm sm:text-base"
             >
               <Plus className="w-4 h-4 mr-2" />
               Nova Solicitação
@@ -155,13 +155,13 @@ export function ManutencoesPage() {
           <StatCard title="Concluídas" value={estatisticasPermitidas.concluidas} color="green" />
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-gray-500" />
-            <h3 className="text-lg font-medium text-gray-900">Filtros</h3>
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 lg:p-6 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">Filtros</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <div>
               <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar..." />
             </div>
@@ -170,7 +170,7 @@ export function ManutencoesPage() {
               <select
                 value={filtroEmpreendimento}
                 onChange={(e) => setFiltroEmpreendimento(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="">Todos os Empreendimentos</option>
                 {empreendimentos.map(emp => (
@@ -184,7 +184,7 @@ export function ManutencoesPage() {
                 <select
                   value={filtroGerente}
                   onChange={(e) => setFiltroGerente(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 >
                   <option value="">Todos os Gerentes</option>
                   {gerentes.map(gerente => (
@@ -198,7 +198,7 @@ export function ManutencoesPage() {
               <select
                 value={filtroStatus}
                 onChange={(e) => setFiltroStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               >
                 <option value="">Todos os Status</option>
                 <option value="pendente">Pendente</option>
@@ -212,7 +212,7 @@ export function ManutencoesPage() {
                 value={filtroDataInicio}
                 onChange={(e) => setFiltroDataInicio(e.target.value)}
                 placeholder="Data início"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
 
@@ -222,7 +222,7 @@ export function ManutencoesPage() {
                 value={filtroDataFim}
                 onChange={(e) => setFiltroDataFim(e.target.value)}
                 placeholder="Data fim"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                className="w-full px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
           </div>
@@ -238,7 +238,7 @@ export function ManutencoesPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {manutencoesFiltradas.map((manutencao) => (
             <ManutencaoCard
               key={manutencao.id}

@@ -92,6 +92,7 @@ function AdminHeader({ currentPage, onPageChange }: {
   const { user, logout } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -137,101 +138,202 @@ function AdminHeader({ currentPage, onPageChange }: {
   
   return (
     <>
-      <header className="bg-green-600 text-white shadow-lg">
-        <div className="max-w-full mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
+      <header className="gradient-primary text-white shadow-strong sticky top-0 z-50 backdrop-blur-sm">
+        <div className="container-fluid">
+          <div className="flex items-center justify-between h-18">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
-                  <img 
-                    src="/OLC.jpeg" 
-                    alt="Construtora Planeta Logo" 
-                    className="w-full h-full object-contain rounded"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">Construtora Planeta</h1>
-                  <p className="text-xs text-green-100">Gestão de Produtos</p>
-                </div>
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center p-2 ring-2 ring-white/20">
+                <img 
+                  src="/OLC.jpeg" 
+                  alt="Construtora Planeta Logo" 
+                  className="w-full h-full object-contain rounded-lg"
+                />
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-lg lg:text-xl xl:text-2xl font-bold text-white tracking-tight whitespace-nowrap">Construtora Planeta</h1>
+                <p className="text-xs lg:text-sm text-white/80 font-medium mt-0.5">Gestão de Produtos</p>
+              </div>
+              <div className="sm:hidden">
+                <h1 className="text-lg font-bold text-white tracking-tight">Planeta</h1>
               </div>
             </div>
 
-            {/* Navigation */}
-            <nav className="flex items-center space-x-1">
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-3 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 backdrop-blur-sm"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-2">
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.key}
                     onClick={() => onPageChange(item.key as PageType)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors font-medium text-sm ${
+                    className={`flex items-center space-x-2 lg:space-x-3 px-3 lg:px-4 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm backdrop-blur-sm ${
                       currentPage === item.key 
-                        ? 'bg-green-700 text-white' 
-                        : 'text-green-100 hover:text-white hover:bg-green-500'
+                        ? 'bg-white/20 text-white shadow-medium ring-1 ring-white/30' 
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
+                    <span className="hidden lg:inline">{item.label}</span>
                   </button>
                 );
               })}
             </nav>
 
-            {/* User Menu */}
-            <div className="relative">
-              {user?.foto ? (
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/20 hover:ring-white/40 transition-all"
-                >
+            {/* User Menu - Desktop */}
+            <div className="hidden md:block relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center space-x-3 p-2 rounded-xl hover:bg-white/10 transition-all duration-200 backdrop-blur-sm"
+              >
+                {user?.foto ? (
                   <img 
                     src={user.foto} 
                     alt={user.nome}
-                    className="w-full h-full object-cover"
+                    className="w-9 h-9 rounded-xl object-cover ring-2 ring-white/30 shadow-medium"
                     onError={(e) => {
                       // Se a imagem falhar, mostrar iniciais
                       e.currentTarget.style.display = 'none';
                       const parent = e.currentTarget.parentElement;
                       if (parent) {
-                        parent.innerHTML = `<div class="flex items-center justify-center w-10 h-10 ${getAvatarColor(user?.nome || '')} rounded-full text-white font-bold">${getInitials(user?.nome || '')}</div>`;
+                        parent.innerHTML = `<div class="flex items-center justify-center w-9 h-9 ${getAvatarColor(user?.nome || '')} rounded-xl text-white font-bold text-sm ring-2 ring-white/30 shadow-medium">${getInitials(user?.nome || '')}</div>`;
                       }
                     }}
                   />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full text-white font-bold hover:opacity-80 transition-all ring-2 ring-white/20 ${getAvatarColor(user?.nome || '')}`}
-                >
-                  {getInitials(user?.nome || '')}
-                </button>
-              )}
+                ) : (
+                  <div className={`flex items-center justify-center w-9 h-9 rounded-xl text-white font-bold text-sm ring-2 ring-white/30 shadow-medium ${getAvatarColor(user?.nome || '')}`}>
+                    {getInitials(user?.nome || '')}
+                  </div>
+                )}
+                <span className="hidden lg:block text-sm font-medium text-white">{user?.nome}</span>
+                <svg className="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50">
+                <div className="absolute right-0 top-full mt-3 w-52 bg-white/95 backdrop-blur-md rounded-2xl shadow-strong py-2 z-50 ring-1 ring-gray-200/50 animate-fade-in">
                   <button
                     onClick={() => {
                       setIsProfileOpen(true);
                       setShowUserMenu(false);
                     }}
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 w-full text-left transition-colors font-medium"
                   >
-                    <User className="w-4 h-4 mr-3" />
+                    <User className="w-5 h-5 mr-3 text-green-600" />
                     Meu Perfil
                   </button>
-                  <hr className="my-1" />
+                  <hr className="my-1 border-gray-200" />
                   <button
                     onClick={handleLogout}
-                    className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                    className="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors font-medium"
                   >
-                    <LogOut className="w-4 h-4 mr-3" />
+                    <LogOut className="w-5 h-5 mr-3" />
                     Sair
                   </button>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-gray-200/50 animate-slide-up">
+              <div className="px-4 pt-4 pb-3 space-y-2">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => {
+                        onPageChange(item.key as PageType);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-left font-medium transition-all duration-200 ${
+                        currentPage === item.key 
+                          ? 'bg-green-100 text-green-700 shadow-medium' 
+                          : 'text-gray-700 hover:text-green-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+                
+                {/* Mobile User Menu */}
+                <div className="border-t border-gray-200/50 pt-4 mt-4">
+                  <div className="flex items-center px-4 mb-4">
+                    {user?.foto ? (
+                      <img 
+                        src={user.foto} 
+                        alt={user.nome}
+                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-green-200 shadow-medium"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            const div = document.createElement('div');
+                            div.className = `flex items-center justify-center w-12 h-12 ${getAvatarColor(user?.nome || '')} rounded-xl text-white font-bold text-lg ring-2 ring-green-200 shadow-medium`;
+                            div.textContent = getInitials(user?.nome || '');
+                            parent.insertBefore(div, e.currentTarget);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className={`flex items-center justify-center w-12 h-12 ${getAvatarColor(user?.nome || '')} rounded-xl text-white font-bold text-lg ring-2 ring-green-200 shadow-medium`}>
+                        {getInitials(user?.nome || '')}
+                      </div>
+                    )}
+                    <div className="ml-4 flex-1">
+                      <p className="text-lg font-semibold text-gray-900">{user?.nome}</p>
+                      <p className="text-sm text-gray-600 font-medium">{user?.cargo}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 px-4">
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(true);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-left text-gray-700 hover:text-green-700 hover:bg-gray-50 transition-all duration-200 font-medium"
+                    >
+                      <User className="w-5 h-5" />
+                      <span>Meu Perfil</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center space-x-3 w-full px-4 py-3 rounded-xl text-left text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 font-medium"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span>Sair</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -273,63 +375,70 @@ function DashboardPage({ onPageChange }: { onPageChange: (page: PageType) => voi
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Dashboard
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Bem-vindo, {user?.nome}!
-              </p>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-medium">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+                  Dashboard
+                </h1>
+                <p className="text-lg text-gray-600 font-medium">
+                  Bem-vindo, <span className="text-green-600 font-semibold">{user?.nome}</span>!
+                </p>
+              </div>
             </div>
           </div>
           
           {/* Estatísticas */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-l-green-500">
+            <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-green-500 hover:shadow-strong transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Visitas da Semana</p>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Visitas da Semana</p>
                   <p className="text-3xl font-bold text-gray-900">{visitasDaSemana}</p>
                 </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Eye className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Eye className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-l-orange-500">
+            <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-orange-500 hover:shadow-strong transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total de Visitas</p>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Total de Visitas</p>
                   <p className="text-3xl font-bold text-gray-900">{estatisticasVisitas.total}</p>
                 </div>
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Eye className="w-6 h-6 text-orange-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Eye className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-l-blue-500">
+            <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-blue-500 hover:shadow-strong transition-all duration-300 group">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Empreendimentos</p>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Empreendimentos</p>
                   <p className="text-3xl font-bold text-gray-900">{empreendimentos.length}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Building2 className="w-6 h-6 text-white" />
                 </div>
               </div>
             </div>
             
             {isAdmin && (
-              <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-l-purple-500">
+              <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-purple-500 hover:shadow-strong transition-all duration-300 group">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Gerentes Ativos</p>
+                    <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Gerentes Ativos</p>
                     <p className="text-3xl font-bold text-gray-900">{gerentesAtivos}</p>
                   </div>
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Users className="w-6 h-6 text-purple-600" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </div>
@@ -337,19 +446,19 @@ function DashboardPage({ onPageChange }: { onPageChange: (page: PageType) => voi
           </div>
           
           {/* Seção Empreendimentos */}
-          <div className="bg-green-600 rounded-lg p-6 mb-8 text-white">
+          <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-8 mb-8 text-white shadow-strong">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold mb-2">Empreendimentos</h2>
-                <p className="text-green-100">
+                <h2 className="text-2xl font-bold mb-3">Empreendimentos</h2>
+                <p className="text-green-100 text-lg">
                   {isAdmin ? 'Gerencie todos os projetos da construtora' : 'Visualize os empreendimentos disponíveis'}
                 </p>
               </div>
               <button 
                 onClick={() => onPageChange('empreendimentos-view')}
-                className="bg-white text-green-600 px-4 py-2 rounded-md hover:bg-green-50 transition-colors flex items-center space-x-2"
+                className="bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 flex items-center space-x-3 font-semibold border border-white/20 hover:border-white/30 shadow-medium"
               >
-                <Building2 className="w-4 h-4" />
+                <Building2 className="w-5 h-5" />
                 <span>Ver Empreendimentos</span>
               </button>
             </div>
@@ -359,16 +468,16 @@ function DashboardPage({ onPageChange }: { onPageChange: (page: PageType) => voi
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isAdmin && (
               <div 
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 cursor-pointer group border border-gray-100 hover:border-blue-200"
                 onClick={() => onPageChange('usuarios')}
               >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Users className="w-5 h-5 text-blue-600" />
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                    <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Gerenciar Usuários</h3>
-                    <p className="text-sm text-gray-600">Criar e editar contas de gerentes</p>
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Gerenciar Usuários</h3>
+                    <p className="text-sm text-gray-600 font-medium">Criar e editar contas de gerentes</p>
                   </div>
                 </div>
               </div>
@@ -376,32 +485,32 @@ function DashboardPage({ onPageChange }: { onPageChange: (page: PageType) => voi
             
             {isAdmin && (
               <div 
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 cursor-pointer group border border-gray-100 hover:border-green-200"
                 onClick={() => onPageChange('empreendimentos')}
               >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-green-600" />
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                    <Building2 className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Empreendimentos</h3>
-                    <p className="text-sm text-gray-600">Cadastrar e gerenciar projetos</p>
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors">Empreendimentos</h3>
+                    <p className="text-sm text-gray-600 font-medium">Cadastrar e gerenciar projetos</p>
                   </div>
                 </div>
               </div>
             )}
             
             <div 
-              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 cursor-pointer group border border-gray-100 hover:border-purple-200"
               onClick={() => onPageChange('visitas')}
             >
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Eye className="w-5 h-5 text-purple-600" />
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Eye className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Visitas</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Visitas</h3>
+                  <p className="text-sm text-gray-600 font-medium">
                     {isAdmin ? 'Acompanhar visitas agendadas' : 'Agendar e acompanhar suas visitas'}
                   </p>
                 </div>
@@ -409,16 +518,16 @@ function DashboardPage({ onPageChange }: { onPageChange: (page: PageType) => voi
             </div>
             
             <div 
-              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 cursor-pointer group border border-gray-100 hover:border-orange-200"
               onClick={() => onPageChange('manutencoes')}
             >
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-5 h-5 text-orange-600" />
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Package className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Manutenções</h3>
-                  <p className="text-sm text-gray-600">
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors">Manutenções</h3>
+                  <p className="text-sm text-gray-600 font-medium">
                     {isAdmin ? 'Acompanhar solicitações dos gerentes' : 'Solicitar manutenções'}
                   </p>
                 </div>
@@ -426,32 +535,32 @@ function DashboardPage({ onPageChange }: { onPageChange: (page: PageType) => voi
             </div>
             
             <div 
-              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 cursor-pointer group border border-gray-100 hover:border-cyan-200"
               onClick={() => onPageChange('contatos')}
             >
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-cyan-600" />
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <FileText className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Contatos</h3>
-                  <p className="text-sm text-gray-600">Gerenciar prestadores de serviço</p>
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-cyan-600 transition-colors">Contatos</h3>
+                  <p className="text-sm text-gray-600 font-medium">Gerenciar prestadores de serviço</p>
                 </div>
               </div>
             </div>
             
             {isAdmin && (
               <div 
-                className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 cursor-pointer group border border-gray-100 hover:border-indigo-200"
                 onClick={() => onPageChange('atribuir-produtos')}
               >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-indigo-600" />
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                    <Settings className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">Atribuir Produtos</h3>
-                    <p className="text-sm text-gray-600">Gerenciar acesso de gerentes aos produtos</p>
+                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">Atribuir Produtos</h3>
+                    <p className="text-sm text-gray-600 font-medium">Gerenciar acesso de gerentes aos produtos</p>
                   </div>
                 </div>
               </div>
@@ -579,7 +688,7 @@ function ManagerDashboard({ onPageChange }: { onPageChange: (page: PageType) => 
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       </div>
     );
@@ -591,49 +700,117 @@ function ManagerDashboard({ onPageChange }: { onPageChange: (page: PageType) => 
         {/* Header do Gerente */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <User className="w-6 h-6 text-green-600" />
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-medium">
+                <User className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Gerente de Produto</h1>
-                <p className="text-gray-600">{user?.nome}</p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">Dashboard do Gerente</h1>
+                <p className="text-lg text-gray-600 font-medium">
+                  Bem-vindo, <span className="text-green-600 font-semibold">{user?.nome}</span>!
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Produtos Ativos */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-2 mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Produtos Ativos</h2>
-              <div className="flex items-center space-x-1">
-                <span className="text-2xl font-bold text-gray-900">{meusEmpreendimentos.length}</span>
-                <Eye className="w-5 h-5 text-gray-500" />
+          {/* Estatísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-green-500 hover:shadow-strong transition-all duration-300 group">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Produtos Ativos</p>
+                  <p className="text-3xl font-bold text-gray-900">{meusEmpreendimentos.length}</p>
+                </div>
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-blue-500 hover:shadow-strong transition-all duration-300 group">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Visitas da Semana</p>
+                  <p className="text-3xl font-bold text-gray-900">{visitasAgendadasSemana.length}</p>
+                </div>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Eye className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-orange-500 hover:shadow-strong transition-all duration-300 group">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Solicitações Pendentes</p>
+                  <p className="text-3xl font-bold text-gray-900">{solicitacoesPendentes.length}</p>
+                </div>
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Package className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-2xl shadow-medium p-6 border-l-4 border-l-purple-500 hover:shadow-strong transition-all duration-300 group">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Melhorias Concluídas</p>
+                  <p className="text-3xl font-bold text-gray-900">{melhoriasConcluidas.length}</p>
+                </div>
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-medium group-hover:scale-110 transition-transform duration-300">
+                  <Settings className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
           </div>
 
+          {/* Seção Produtos Ativos */}
+          <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-8 mb-8 text-white shadow-strong">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-3">Meus Produtos</h2>
+                <p className="text-green-100 text-lg">
+                  Gerencie seus {meusEmpreendimentos.length} produtos ativos
+                </p>
+              </div>
+              <button 
+                onClick={() => onPageChange('empreendimentos-view')}
+                className="bg-white/10 backdrop-blur-sm text-white px-6 py-3 rounded-xl hover:bg-white/20 transition-all duration-200 flex items-center space-x-3 font-semibold border border-white/20 hover:border-white/30 shadow-medium"
+              >
+                <Building2 className="w-5 h-5" />
+                <span>Ver Produtos</span>
+              </button>
+            </div>
+          </div>
+          
           {/* Grid de Seções - Visão Geral */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Visitas Agendadas */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Visitas Agendadas</h3>
-              <p className="text-sm text-gray-600 mb-4">Todas as visitas programadas</p>
+            <div className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 border border-gray-100">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-medium">
+                  <Eye className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Visitas Agendadas</h3>
+                  <p className="text-sm text-gray-600 font-medium">Próximas visitas programadas</p>
+                </div>
+              </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {minhasVisitas.filter(v => v.status === 'agendada').slice(0, 3).map((visita) => (
-                  <div key={visita.id} className="border-l-4 border-l-blue-500 pl-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{visita.corretor}</h4>
-                        <p className="text-sm text-blue-600 mb-1">{visita.empreendimento}</p>
+                  <div key={visita.id} className="border-l-4 border-l-blue-500 pl-3 sm:pl-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm sm:text-base font-medium text-gray-900 truncate">{visita.corretor}</h4>
+                        <p className="text-xs sm:text-sm text-blue-600 mb-1 truncate">{visita.empreendimento}</p>
                       </div>
-                      <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-700">
-                          <Edit className="w-4 h-4" />
+                      <div className="flex space-x-1 sm:space-x-2 ml-2">
+                        <button className="text-blue-600 hover:text-blue-700 p-1">
+                          <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-700">
-                          <Trash2 className="w-4 h-4" />
+                        <button className="text-red-600 hover:text-red-700 p-1">
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     </div>
@@ -649,34 +826,41 @@ function ManagerDashboard({ onPageChange }: { onPageChange: (page: PageType) => 
             </div>
 
             {/* Solicitações */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Solicitações</h3>
-              <p className="text-sm text-gray-600 mb-4">Produtos com melhorias necessárias</p>
+            <div className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 border border-gray-100">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-medium">
+                  <Package className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Solicitações Pendentes</h3>
+                  <p className="text-sm text-gray-600 font-medium">Melhorias necessárias</p>
+                </div>
+              </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {solicitacoesPendentes.slice(0, 3).map((manutencao) => (
-                  <div key={manutencao.id} className="border-l-4 border-l-orange-500 pl-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{manutencao.empreendimento}</h4>
-                        <p className="text-sm text-gray-600 mb-2">{manutencao.descricao}</p>
+                  <div key={manutencao.id} className="border-l-4 border-l-orange-500 pl-3 sm:pl-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm sm:text-base font-medium text-gray-900 truncate">{manutencao.empreendimento}</h4>
+                        <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">{manutencao.descricao}</p>
                       </div>
-                      <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-700">
-                          <Edit className="w-4 h-4" />
+                      <div className="flex space-x-1 sm:space-x-2 ml-2">
+                        <button className="text-blue-600 hover:text-blue-700 p-1">
+                          <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-700">
-                          <Trash2 className="w-4 h-4" />
+                        <button className="text-red-600 hover:text-red-700 p-1">
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPrioridadeColor(manutencao.prioridade)}`}>
                         {manutencao.prioridade}
                       </span>
                       <button
                         onClick={() => handleConcluirManutencao(manutencao.id)}
-                        className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors"
+                        className="bg-green-600 text-white px-2 sm:px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors"
                       >
                         Concluir
                       </button>
@@ -690,23 +874,30 @@ function ManagerDashboard({ onPageChange }: { onPageChange: (page: PageType) => 
             </div>
 
             {/* Melhorias Concluídas */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Melhorias Concluídas</h3>
-              <p className="text-sm text-gray-600 mb-4">Todas as datas</p>
+            <div className="bg-white rounded-2xl shadow-medium p-6 hover:shadow-strong transition-all duration-300 border border-gray-100">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-medium">
+                  <Settings className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Melhorias Concluídas</h3>
+                  <p className="text-sm text-gray-600 font-medium">Histórico de melhorias</p>
+                </div>
+              </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {melhoriasConcluidas.slice(0, 3).map((manutencao) => (
-                  <div key={manutencao.id} className="border-l-4 border-l-green-500 pl-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{manutencao.empreendimento}</h4>
-                        <p className="text-sm text-gray-600 mb-1">{manutencao.descricao}</p>
+                  <div key={manutencao.id} className="border-l-4 border-l-green-500 pl-3 sm:pl-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm sm:text-base font-medium text-gray-900 truncate">{manutencao.empreendimento}</h4>
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1 line-clamp-2">{manutencao.descricao}</p>
                       </div>
-                      <button className="text-red-600 hover:text-red-700">
-                        <Trash2 className="w-4 h-4" />
+                      <button className="text-red-600 hover:text-red-700 p-1 ml-2">
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         Concluída
                       </span>

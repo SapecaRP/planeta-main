@@ -37,23 +37,23 @@ export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplet
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border-l-4 border-l-blue-500">
-        <div className="flex flex-wrap items-start justify-between mb-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow">
+        <div className="flex flex-col sm:flex-row justify-between items-start mb-3 sm:mb-4 space-y-2 sm:space-y-0">
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900">{manutencao.empreendimento}</h3>
-              <span className={`inline-flex flex-wrap items-center px-2 py-1 rounded-full text-xs font-medium ${getPrioridadeColor(manutencao.prioridade)}`}>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">{manutencao.empreendimento}</h3>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPrioridadeColor(manutencao.prioridade)}`}>
                 {manutencao.prioridade}
               </span>
-              <span className={`inline-flex flex-wrap items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(manutencao.status)}`}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(manutencao.status)}`}>
                 {manutencao.status}
               </span>
             </div>
-            <p className="text-blue-600 text-xs sm:text-sm mb-3 hover:text-blue-800 cursor-pointer" onClick={() => onView(manutencao)}>
+            <p className="text-blue-600 text-xs sm:text-sm mb-3 hover:text-blue-800 cursor-pointer break-words" onClick={() => onView(manutencao)}>
               {manutencao.descricao}
             </p>
           </div>
-          <div className="flex flex-wrap space-x-1 ml-4">
+          <div className="flex space-x-1 sm:space-x-2 ml-0 sm:ml-4">
             <button onClick={() => onView(manutencao)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Visualizar">
               <Eye className="w-4 h-4" />
             </button>
@@ -70,60 +70,62 @@ export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplet
           </div>
         </div>
 
-        <div className="border-t pt-4 space-y-2">
+        <div className="border-t pt-3 sm:pt-4 space-y-2 sm:space-y-3">
           {/* Fotos da manutenção */}
           {manutencao.fotos && manutencao.fotos.length > 0 && (
             <div className="mb-3">
-              <div className="flex flex-wrap items-center mb-2">
+              <div className="flex items-center mb-2">
                 <Image className="w-4 h-4 mr-1 text-gray-500" />
                 <span className="text-xs sm:text-sm font-medium text-gray-700">Fotos ({manutencao.fotos.length})</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {manutencao.fotos.slice(0, 3).map((foto, index) => (
-                  <div key={index} className="relative">
+                  <button
+                    key={index}
+                    onClick={() => setImagemAberta(foto)}
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 transition-colors flex-shrink-0 relative"
+                  >
                     <img
                       src={foto}
                       alt={`Foto ${index + 1}`}
-                      className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setImagemAberta(foto)}
+                      className="w-full h-full object-cover"
                     />
                     {index === 2 && manutencao.fotos && manutencao.fotos.length > 3 && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded flex flex-wrap items-center justify-center">
+                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded flex items-center justify-center">
                         <span className="text-white text-xs font-medium">
                           +{manutencao.fotos.length - 3}
                         </span>
                       </div>
                     )}
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between text-xs sm:text-sm text-gray-600">
-            <div className="flex flex-wrap items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+            <div className="flex items-center text-xs sm:text-sm text-gray-600">
               <Calendar className="w-4 h-4 mr-1" />
               <span>Criado: {formatDate(manutencao.criadoEm)}</span>
             </div>
+            {manutencao.concluidoEm && (
+              <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                <span>Concluído: {formatDate(manutencao.concluidoEm)}</span>
+              </div>
+            )}
           </div>
 
-          {manutencao.concluidoEm && (
-            <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
-              <span>Concluído: {formatDate(manutencao.concluidoEm)}</span>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-600">
+          <div className="flex items-center text-xs sm:text-sm text-gray-600">
             <User className="w-4 h-4 mr-1" />
             <span>Gerente: {manutencao.gerente}</span>
           </div>
 
           {manutencao.status === 'pendente' && onComplete && !isAdmin && (
-            <div className="pt-2">
+            <div className="pt-2 sm:pt-3">
               <button
                 onClick={() => onComplete(manutencao.id)}
-                className="w-full bg-green-600 text-white py-2 px-4 sm:px-6 lg:px-8 rounded-md hover:bg-green-700 transition-colors text-xs sm:text-sm font-medium"
+                className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-xs sm:text-sm font-medium"
               >
                 Marcar como Concluída
               </button>
@@ -134,8 +136,16 @@ export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplet
 
       {/* Modal de visualização da imagem */}
       {imagemAberta && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex flex-wrap items-center justify-center z-50 p-4" onClick={() => setImagemAberta(null)}>
-          <img src={imagemAberta} alt="Imagem ampliada" className="max-w-full max-h-full rounded-lg shadow-lg" />
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={() => setImagemAberta(null)}>
+          <div className="relative max-w-full max-h-full">
+            <button
+              onClick={() => setImagemAberta(null)}
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-1"
+            >
+              <Eye className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+            <img src={imagemAberta} alt="Imagem ampliada" className="max-w-full max-h-full rounded-lg shadow-lg object-contain" />
+          </div>
         </div>
       )}
     </>

@@ -110,15 +110,15 @@ export function UsuariosPage() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               Gestão de Usuários
             </h1>
             <button
               onClick={handleCreateNew}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors shadow-sm"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors shadow-sm text-sm sm:text-base"
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Usuário
@@ -126,10 +126,10 @@ export function UsuariosPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-1 mb-6">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-1 mb-4 sm:mb-6">
             <button
               onClick={() => setActiveTab('approved')}
-              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium transition-colors ${
                 activeTab === 'approved'
                   ? 'bg-green-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -139,7 +139,7 @@ export function UsuariosPage() {
             </button>
             <button
               onClick={() => setActiveTab('pending')}
-              className={`px-4 py-2 rounded-md font-medium transition-colors relative ${
+              className={`px-3 sm:px-4 py-2 rounded-md text-sm sm:text-base font-medium transition-colors relative ${
                 activeTab === 'pending'
                   ? 'bg-orange-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -148,13 +148,13 @@ export function UsuariosPage() {
               <Clock className="w-4 h-4 mr-2 inline" />
               Pendentes de Aprovação ({pendingUsers.length})
               {pendingUsers.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                   {pendingUsers.length}
                 </span>
               )}
             </button>
           </div>
-          <div className="max-w-md">
+          <div className="w-full sm:max-w-md">
             <SearchBar
               value={searchTerm}
               onChange={setSearchTerm}
@@ -173,7 +173,7 @@ export function UsuariosPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {usuariosFiltrados.map((usuario) => (
               activeTab === 'approved' ? (
                 <UsuarioCard
