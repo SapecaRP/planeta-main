@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, User, MapPin } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, Edit, Trash2 } from 'lucide-react';
 import { Visita } from '../types';
 
 interface VisitaCardProps {
@@ -7,9 +7,10 @@ interface VisitaCardProps {
   onEdit?: (visita: Visita) => void;
   onDelete?: (id: string) => void;
   onMarkAsCompleted?: (id: string) => void;
+  isAdmin?: boolean;
 }
 
-export function VisitaCard({ visita, onEdit, onDelete, onMarkAsCompleted }: VisitaCardProps) {
+export function VisitaCard({ visita, onEdit, onDelete, onMarkAsCompleted, isAdmin = false }: VisitaCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'agendada':
@@ -67,14 +68,34 @@ export function VisitaCard({ visita, onEdit, onDelete, onMarkAsCompleted }: Visi
           </div>
         </div>
         
-        <div className="ml-4">
+        <div className="flex items-center space-x-2">
           <span className={`text-xs sm:text-sm font-medium ${getStatusColor(visita.status)}`}>
             {getStatusText(visita.status)}
           </span>
+          <div className="flex space-x-1 ml-2">
+            {!isAdmin && onEdit && (
+              <button
+                onClick={() => onEdit(visita)}
+                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="Editar"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            )}
+            {!isAdmin && onDelete && (
+              <button
+                onClick={() => onDelete(visita.id)}
+                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="Excluir"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
       
-      {visita.status === 'agendada' && onMarkAsCompleted && (
+      {visita.status === 'agendada' && !isAdmin && onMarkAsCompleted && (
         <div className="mt-4 pt-4 border-t">
           <button
             onClick={() => onMarkAsCompleted(visita.id)}

@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Plus, Lock, Building2, MapPin, Package, Eye } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Lock, MapPin, Package, Eye } from 'lucide-react';
 import { SearchBar } from '../components/SearchBar';
 import { EmpreendimentoCard } from '../components/EmpreendimentoCard';
 import { EmpreendimentoModal } from '../components/EmpreendimentoModal';
@@ -93,9 +93,16 @@ export function EmpreendimentosPage() {
     setIsVisitaModalOpen(true);
   };
 
-  const handleSubmitVisita = (dados: any) => {
-    criarVisita(dados);
-    alert('Visita agendada com sucesso!');
+  const handleSubmitVisita = async (dados: any) => {
+    try {
+      await criarVisita(dados);
+      alert('Visita agendada com sucesso! Verifique na página de Visitas.');
+      // Fechar o modal
+      setIsVisitaModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao criar visita:', error);
+      alert('Erro ao agendar visita. Tente novamente.');
+    }
   };
 
   const handleSubmitManutencao = (dados: any) => {
@@ -187,93 +194,82 @@ export function EmpreendimentosPage() {
           /* Layout de cards para gerentes */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {empreendimentosFiltrados.map((empreendimento) => (
-              <div key={empreendimento.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div key={empreendimento.id} className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:scale-[1.02] flex flex-col">
                 {/* Área da imagem */}
-                <div className="h-48 overflow-hidden bg-gray-200">
-                  {empreendimento.foto ? (
+                {empreendimento.foto && (
+                  <div className="h-48 overflow-hidden">
                     <img 
                       src={empreendimento.foto} 
                       alt={empreendimento.nome}
                       className="w-full h-full object-cover"
                       onError={(e) => {
+                        console.error('Erro ao carregar imagem:', empreendimento.foto);
                         e.currentTarget.style.display = 'none';
-                        const parent = e.currentTarget.parentElement;
-                        if (parent) {
-                          parent.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center bg-gray-200">
-                              <div class="w-12 h-12 bg-gray-300 rounded flex items-center justify-center">
-                                <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
-                              </div>
-                            </div>
-                          `;
-                        }
                       }}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                      <div className="w-12 h-12 bg-gray-300 rounded flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-gray-500" />
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
                 
                 {/* Conteúdo do card */}
-                <div className="p-4">
-                  {/* Status badge */}
-                  <div className="flex justify-end mb-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      empreendimento.status === 'Estoque' ? 'bg-blue-100 text-blue-800' :
-                      empreendimento.status === 'STAND' ? 'bg-yellow-100 text-yellow-800' :
-                      empreendimento.status === 'PDV' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {empreendimento.status}
-                    </span>
-                  </div>
-                  
-                  {/* Nome do empreendimento */}
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{empreendimento.nome}</h3>
-                  
-                  {/* Endereço */}
-                  <div className="flex items-center text-gray-600 mb-3">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span className="text-sm">{empreendimento.endereco}</span>
-                  </div>
-                  
-                  {/* Informações do empreendimento */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">INFORMAÇÕES DO EMPREENDIMENTO</h4>
-                    <div className="text-sm text-gray-600">
-                      {empreendimento.informacoes ? (
-                        <p className="line-clamp-3">{empreendimento.informacoes}</p>
-                      ) : (
-                        <div className="space-y-1">
-                          <p>Apartamentos modernos</p>
-                          <p>Localização privilegiada</p>
-                        </div>
-                      )}
+                <div className="p-6 flex flex-col flex-1">
+                  <div className="flex flex-wrap items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{empreendimento.nome}</h3>
+                      <div className="flex items-center text-gray-600 mb-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const encodedAddress = encodeURIComponent(empreendimento.endereco);
+                            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+                            window.open(googleMapsUrl, '_blank');
+                          }}
+                          className="flex items-center flex-1 mr-2 hover:text-blue-600 transition-colors group"
+                          title="Clique para abrir no Google Maps"
+                        >
+                          <MapPin className="w-4 h-4 mr-1 flex-shrink-0 group-hover:text-blue-600" />
+                          <span className="text-xs sm:text-sm truncate group-hover:text-blue-600">{empreendimento.endereco}</span>
+                        </button>
+                      </div>
+                      <span className={`inline-flex flex-wrap items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        empreendimento.status === 'Estoque' ? 'bg-blue-100 text-blue-800' :
+                        empreendimento.status === 'STAND' ? 'bg-yellow-100 text-yellow-800' :
+                        empreendimento.status === 'PDV' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {empreendimento.status}
+                      </span>
                     </div>
                   </div>
-                  
-                  {/* Botões de ação */}
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleCriarManutencao(empreendimento.nome)}
-                      className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 text-sm font-medium"
-                    >
-                      <Package className="w-4 h-4" />
-                      <span>Manutenção</span>
-                    </button>
-                    <button
-                      onClick={() => handleAgendarVisita(empreendimento.nome)}
-                      className="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm font-medium"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>Visitas</span>
-                    </button>
+
+                  <div className="border-t pt-4 flex-1 flex flex-col">
+                    <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-2">INFORMAÇÕES:</h4>
+                    <div className="text-xs sm:text-sm text-gray-600 whitespace-pre-line mb-4 flex-1">
+                      {empreendimento.informacoes || 'Apartamentos modernos\nLocalização privilegiada'}
+                    </div>
+                    
+                    {/* Botões de ação - sempre na parte inferior */}
+                    <div className="flex space-x-2 mt-auto">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCriarManutencao(empreendimento.nome);
+                        }}
+                        className="flex-1 bg-green-600 text-white py-2.5 px-4 rounded-md hover:bg-green-700 transition-colors flex items-center justify-center space-x-2 text-sm font-medium min-h-[40px]"
+                      >
+                        <Package className="w-4 h-4" />
+                        <span>Manutenção</span>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAgendarVisita(empreendimento.nome);
+                        }}
+                        className="flex-1 bg-white border border-gray-300 text-gray-700 py-2.5 px-4 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2 text-sm font-medium min-h-[40px]"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>Visitas</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -302,6 +298,7 @@ export function EmpreendimentosPage() {
         isOpen={isManutencaoModalOpen}
         onClose={() => setIsManutencaoModalOpen(false)}
         onSubmit={handleSubmitManutencao}
+        empreendimentos={isAdmin ? empreendimentos.map(e => e.nome) : empreendimentosPermitidos.map(e => e.nome)}
         empreendimento={selectedEmpreendimento}
       />
     </main>

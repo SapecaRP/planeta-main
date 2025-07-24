@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Contato, ContatoFormData } from '../types';
 import { supabase } from '../supabaseClient';
 
+const TIPOS_SERVICO_PADRAO = ['Manutenção', 'Limpeza', 'Elétrica', 'Hidráulica', 'Pintura', 'Jardinagem', 'Segurança', 'Facilities'] as const;
+
 export function useContatos() {
   const [contatos, setContatos] = useState<Contato[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,12 +29,15 @@ export function useContatos() {
   };
 
   const criarContato = async (dados: ContatoFormData) => {
+    // Validar se o tipo de serviço é um valor válido do enum
+    const tipo_servico = TIPOS_SERVICO_PADRAO.includes(dados.tipoServico as any) ? dados.tipoServico : 'Outros';
+
     const { data, error } = await supabase
       .from('contatos')
       .insert([{
         nome: dados.nome,
         telefone: dados.telefone,
-        tipo_servico: dados.tipoServico
+        tipo_servico
       }])
       .select()
       .single();
@@ -42,20 +47,19 @@ export function useContatos() {
       throw error;
     }
 
-    const contatoFormatado = {
-      ...data,
-      tipoServico: data.tipo_servico
-    };
+    // Recarregar a lista de contatos após criar um novo
+    await carregarContatos();
 
-    setContatos(prev => [...prev, contatoFormatado]);
-    return contatoFormatado;
+    return data;
   };
 
   const atualizarContato = async (id: string, dados: Partial<ContatoFormData>) => {
     const payload: any = {};
     if (dados.nome) payload.nome = dados.nome;
     if (dados.telefone) payload.telefone = dados.telefone;
-    if (dados.tipoServico) payload.tipo_servico = dados.tipoServico;
+    if (dados.tipoServico) {
+      payload.tipo_servico = TIPOS_SERVICO_PADRAO.includes(dados.tipoServico as any) ? dados.tipoServico : 'Outros';
+    }
 
     const { data, error } = await supabase
       .from('contatos')
@@ -69,14 +73,10 @@ export function useContatos() {
       throw error;
     }
 
-    const contatoAtualizado = {
-      ...data,
-      tipoServico: data.tipo_servico
-    };
+    // Recarregar a lista de contatos após atualizar
+    await carregarContatos();
 
-    setContatos(prev =>
-      prev.map(contato => (contato.id === id ? contatoAtualizado : contato))
-    );
+    return data;
   };
 
   const excluirContato = async (id: string) => {
@@ -87,7 +87,8 @@ export function useContatos() {
       throw error;
     }
 
-    setContatos(prev => prev.filter(contato => contato.id !== id));
+    // Recarregar a lista de contatos após excluir
+    await carregarContatos();
   };
 
   return {

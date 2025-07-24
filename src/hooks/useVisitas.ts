@@ -4,12 +4,13 @@ import { supabase } from '../supabaseClient';
 
 export function useVisitas() {
   const [visitas, setVisitas] = useState<Visita[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     carregarVisitas();
-  }, []);
+  }, [refreshKey]);
 
   const carregarVisitas = async () => {
     try {
@@ -18,7 +19,10 @@ export function useVisitas() {
       
       const { data, error } = await supabase
         .from('visitas')
-        .select('*')
+        .select(`
+          *,
+          empreendimentos!visitas_empreendimento_id_fkey(nome)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -27,9 +31,9 @@ export function useVisitas() {
 
       const visitasFormatadas = data.map(item => ({
         id: item.id,
-        corretor: item.corretor_id,
-        empreendimento: item.empreendimento_id,
-        data: item.data_visita,
+        corretor: item.corretor || 'Corretor não encontrado',
+        empreendimento: item.empreendimentos?.nome || 'Empreendimento não encontrado',
+        data: item.data,
         horario: item.horario,
         status: item.status,
         criadoEm: item.created_at.split('T')[0],
@@ -48,18 +52,29 @@ export function useVisitas() {
 
   const criarVisita = async (dados: VisitaFormData) => {
     try {
+      // Buscar ID do empreendimento pelo nome
+      const { data: empreendimentoData, error: empreendimentoError } = await supabase
+        .from('empreendimentos')
+        .select('id')
+        .eq('nome', dados.empreendimento)
+        .single();
+
+      if (empreendimentoError) {
+        throw new Error(`Empreendimento não encontrado: ${empreendimentoError.message}`);
+      }
+
+      const dadosInsercao = {
+        corretor: dados.corretor,
+        empreendimento_id: empreendimentoData.id,
+        data: dados.data,
+        horario: dados.horario,
+        status: 'agendada',
+        observacoes: dados.observacoes || ''
+      };
+
       const { data, error } = await supabase
         .from('visitas')
-        .insert([
-          {
-            corretor_id: dados.corretor,
-            empreendimento_id: dados.empreendimento,
-            data_visita: dados.data,
-            horario: dados.horario,
-            status: 'agendada',
-            observacoes: dados.observacoes || ''
-          }
-        ])
+        .insert([dadosInsercao])
         .select()
         .single();
 
@@ -67,16 +82,21 @@ export function useVisitas() {
 
       const novaVisita: Visita = {
         id: data.id,
-        corretor: data.corretor_id,
-        empreendimento: data.empreendimento_id,
-        data: data.data_visita,
+        corretor: data.corretor,
+        empreendimento: dados.empreendimento,
+        data: data.data,
         horario: data.horario,
         status: data.status,
         criadoEm: data.created_at.split('T')[0],
         observacoes: data.observacoes
       };
-
-      setVisitas(prev => [novaVisita, ...prev]);
+      
+      // Recarregar a lista completa de visitas após criar uma nova
+      await carregarVisitas();
+      
+      // Forçar atualização do estado
+      setRefreshKey(prev => prev + 1);
+      
       return novaVisita;
     } catch (error) {
       console.error('Erro ao criar visita:', error);
@@ -89,24 +109,28 @@ export function useVisitas() {
       const dadosAtualizados: any = {};
       
       if (dados.status) dadosAtualizados.status = dados.status;
-      if (dados.data) dadosAtualizados.data_visita = dados.data;
+      if (dados.data) dadosAtualizados.data = dados.data;
       if (dados.horario) dadosAtualizados.horario = dados.horario;
       if (dados.observacoes) dadosAtualizados.observacoes = dados.observacoes;
+      if (dados.corretor) dadosAtualizados.corretor = dados.corretor;
       
       const { data, error } = await supabase
         .from('visitas')
         .update(dadosAtualizados)
         .eq('id', id)
-        .select()
+        .select(`
+          *,
+          empreendimentos!visitas_empreendimento_id_fkey(nome)
+        `)
         .single();
         
       if (error) throw error;
       
       const visitaAtualizada: Visita = {
         id: data.id,
-        corretor: data.corretor_id,
-        empreendimento: data.empreendimento_id,
-        data: data.data_visita,
+        corretor: data.corretor || 'Corretor não encontrado',
+        empreendimento: data.empreendimentos?.nome || 'Empreendimento não encontrado',
+        data: data.data,
         horario: data.horario,
         status: data.status,
         criadoEm: data.created_at.split('T')[0],

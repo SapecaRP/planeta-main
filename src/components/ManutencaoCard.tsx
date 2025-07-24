@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Edit, Trash2, Eye, Calendar, User, CheckCircle, Image } from 'lucide-react';
 import { Manutencao } from '../types';
 
@@ -8,9 +8,10 @@ interface ManutencaoCardProps {
   onDelete: (id: string) => void;
   onView: (manutencao: Manutencao) => void;
   onComplete?: (id: string) => void;
+  isAdmin?: boolean;
 }
 
-export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplete }: ManutencaoCardProps) {
+export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplete, isAdmin = false }: ManutencaoCardProps) {
   const [imagemAberta, setImagemAberta] = useState<string | null>(null);
 
   const getPrioridadeColor = (prioridade: string) => {
@@ -56,12 +57,16 @@ export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplet
             <button onClick={() => onView(manutencao)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Visualizar">
               <Eye className="w-4 h-4" />
             </button>
-            <button onClick={() => onEdit(manutencao)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
-              <Edit className="w-4 h-4" />
-            </button>
-            <button onClick={() => onDelete(manutencao.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Excluir">
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {!isAdmin && (
+              <>
+                <button onClick={() => onEdit(manutencao)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button onClick={() => onDelete(manutencao.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Excluir">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -82,7 +87,7 @@ export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplet
                       className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => setImagemAberta(foto)}
                     />
-                    {index === 2 && manutencao.fotos.length > 3 && (
+                    {index === 2 && manutencao.fotos && manutencao.fotos.length > 3 && (
                       <div className="absolute inset-0 bg-black bg-opacity-50 rounded flex flex-wrap items-center justify-center">
                         <span className="text-white text-xs font-medium">
                           +{manutencao.fotos.length - 3}
@@ -114,7 +119,7 @@ export function ManutencaoCard({ manutencao, onEdit, onDelete, onView, onComplet
             <span>Gerente: {manutencao.gerente}</span>
           </div>
 
-          {manutencao.status === 'pendente' && onComplete && (
+          {manutencao.status === 'pendente' && onComplete && !isAdmin && (
             <div className="pt-2">
               <button
                 onClick={() => onComplete(manutencao.id)}

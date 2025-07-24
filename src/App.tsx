@@ -737,6 +737,7 @@ function ManagerDashboard({ onPageChange }: { onPageChange: (page: PageType) => 
           isOpen={isManutencaoModalOpen}
           onClose={() => setIsManutencaoModalOpen(false)}
           onSubmit={handleSubmitManutencao}
+          empreendimentos={meusEmpreendimentos.map(e => e.nome)}
           empreendimento={selectedEmpreendimento}
         />
       </main>

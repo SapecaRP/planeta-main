@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useEmpreendimentos } from '../hooks/useEmpreendimentos';
+import { EmpreendimentoViewModal } from '../components/EmpreendimentoViewModal';
+import { Empreendimento } from '../types';
 
 interface EmpreendimentosViewPageProps {
   onBack: () => void;
@@ -9,6 +11,18 @@ interface EmpreendimentosViewPageProps {
 
 export function EmpreendimentosViewPage({ onBack, onEmpreendimentoClick }: EmpreendimentosViewPageProps) {
   const { empreendimentos, loading } = useEmpreendimentos();
+  const [selectedEmpreendimento, setSelectedEmpreendimento] = useState<Empreendimento | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleEmpreendimentoClick = (empreendimento: Empreendimento) => {
+    setSelectedEmpreendimento(empreendimento);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEmpreendimento(null);
+  };
 
   if (loading) {
     return (
@@ -46,15 +60,15 @@ export function EmpreendimentosViewPage({ onBack, onEmpreendimentoClick }: Empre
           {empreendimentos.map((empreendimento) => (
             <div
               key={empreendimento.id}
-              onClick={onEmpreendimentoClick}
-              className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 overflow-hidden"
+              onClick={() => handleEmpreendimentoClick(empreendimento)}
+              className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 overflow-hidden group"
             >
-              <div className="h-48 overflow-hidden bg-gray-200">
+              <div className="h-48 overflow-hidden bg-gray-200 relative">
                 {empreendimento.foto ? (
                   <img 
                     src={empreendimento.foto} 
                     alt={empreendimento.nome}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
@@ -66,10 +80,15 @@ export function EmpreendimentosViewPage({ onBack, onEmpreendimentoClick }: Empre
                     </span>
                   </div>
                 )}
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                  <span className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    Clique para ver detalhes
+                  </span>
+                </div>
               </div>
               
               <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 text-center hover:text-green-600 transition-colors">
+                <h3 className="text-lg font-semibold text-gray-900 text-center group-hover:text-green-600 transition-colors">
                   {empreendimento.nome}
                 </h3>
               </div>
@@ -77,6 +96,12 @@ export function EmpreendimentosViewPage({ onBack, onEmpreendimentoClick }: Empre
           ))}
         </div>
       )}
+
+      <EmpreendimentoViewModal
+        empreendimento={selectedEmpreendimento}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
     </main>
   );
 }

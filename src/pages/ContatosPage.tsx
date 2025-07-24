@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, Lock } from 'lucide-react';
 import { SearchBar } from '../components/SearchBar';
 import { ContatoCard } from '../components/ContatoCard';
@@ -38,11 +38,17 @@ export function ContatosPage() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (dados: ContatoFormData) => {
-    if (editingContato) {
-      atualizarContato(editingContato.id, dados);
-    } else {
-      criarContato(dados);
+  const handleSubmit = async (dados: ContatoFormData) => {
+    try {
+      if (editingContato) {
+        await atualizarContato(editingContato.id, dados);
+      } else {
+        await criarContato(dados);
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Erro ao salvar contato:', error);
+      alert('Erro ao salvar contato. Por favor, tente novamente.');
     }
   };
 

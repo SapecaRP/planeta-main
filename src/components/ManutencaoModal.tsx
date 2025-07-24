@@ -6,13 +6,15 @@ interface ManutencaoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (dados: ManutencaoFormData & { fotos?: string[] }) => void;
-  empreendimento: string;
+  empreendimentos: string[];
+  empreendimento?: string;
   manutencao?: Manutencao;
+  initialData?: ManutencaoFormData & { fotos?: string[] };
 }
 
-export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimento, manutencao }: ManutencaoModalProps) {
+export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimentos, empreendimento, manutencao, initialData }: ManutencaoModalProps) {
   const [formData, setFormData] = useState<ManutencaoFormData & { fotos: string[] }>({
-    empreendimento: empreendimento,
+    empreendimento: empreendimento || '',
     descricao: '',
     prioridade: 'media',
     gerente: '',
@@ -22,7 +24,15 @@ export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimento, man
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
-    if (manutencao) {
+    if (initialData) {
+      setFormData({
+        empreendimento: initialData.empreendimento,
+        descricao: initialData.descricao,
+        prioridade: initialData.prioridade,
+        gerente: initialData.gerente || '',
+        fotos: initialData.fotos || []
+      });
+    } else if (manutencao) {
       setFormData({
         empreendimento: manutencao.empreendimento,
         descricao: manutencao.descricao,
@@ -32,7 +42,7 @@ export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimento, man
       });
     } else {
       setFormData({
-        empreendimento: empreendimento,
+        empreendimento: empreendimento || '',
         descricao: '',
         prioridade: 'media',
         gerente: '',
@@ -40,10 +50,14 @@ export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimento, man
       });
     }
     setErrors({});
-  }, [manutencao, empreendimento, isOpen]);
+  }, [manutencao, empreendimento, initialData, isOpen]);
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
+
+    if (!formData.empreendimento.trim()) {
+      newErrors.empreendimento = 'Empreendimento é obrigatório';
+    }
 
     if (!formData.descricao.trim()) {
       newErrors.descricao = 'Descrição da manutenção é obrigatória';
@@ -134,7 +148,7 @@ export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimento, man
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
-            Nova Manutenção - {empreendimento}
+            {initialData || manutencao ? 'Editar Manutenção' : 'Nova Manutenção'}
           </h2>
           <button
             onClick={onClose}
@@ -146,12 +160,24 @@ export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimento, man
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="empreendimento" className="block text-sm font-medium text-gray-700 mb-1">
               Empreendimento
             </label>
-            <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">
-              {empreendimento}
-            </div>
+            <select
+              id="empreendimento"
+              name="empreendimento"
+              value={formData.empreendimento}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                errors.empreendimento ? 'border-red-300' : 'border-gray-300'
+              }`}
+            >
+              <option value="">Selecione um empreendimento</option>
+              {empreendimentos.map(emp => (
+                <option key={emp} value={emp}>{emp}</option>
+              ))}
+            </select>
+            {errors.empreendimento && <p className="mt-1 text-sm text-red-600">{errors.empreendimento}</p>}
           </div>
 
           <div>
@@ -257,7 +283,7 @@ export function ManutencaoModal({ isOpen, onClose, onSubmit, empreendimento, man
               type="submit"
               className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
             >
-              Registrar Manutenção
+              {initialData || manutencao ? 'Atualizar Manutenção' : 'Registrar Manutenção'}
             </button>
           </div>
         </form>

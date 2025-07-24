@@ -2,19 +2,22 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Filter, Calendar } from 'lucide-react';
 import { SearchBar } from '../components/SearchBar';
 import { VisitaCard } from '../components/VisitaCard';
+import { VisitaModal } from '../components/VisitaModal';
 import { useVisitas } from '../hooks/useVisitas';
 import { useAuth } from '../contexts/AuthContext';
 import { useAtribuicoes } from '../hooks/useAtribuicoes';
-import { Visita } from '../types';
+import { Visita, VisitaFormData } from '../types';
 
 export const VisitasPage = () => {
   const { user } = useAuth();
-  const { visitas, loading, marcarComoRealizada, excluirVisita, carregarVisitas } = useVisitas();
+  const { visitas, loading, marcarComoRealizada, excluirVisita, carregarVisitas, atualizarVisita } = useVisitas();
   const { atribuicoes, loading: loadingAtribuicoes } = useAtribuicoes();
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEmpreendimento, setFiltroEmpreendimento] = useState('');
   const [filtroCorretor, setFiltroCorretor] = useState('');
   const [filtroData, setFiltroData] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingVisita, setEditingVisita] = useState<Visita | null>(null);
 
   const isAdmin = user?.cargo === 'Administrador';
 
@@ -46,7 +49,17 @@ export const VisitasPage = () => {
   const corretores = [...new Set(visitasPermitidas.map(v => v.corretor))];
 
   const handleEdit = (visita: Visita) => {
-    console.log('Editar visita:', visita);
+    setEditingVisita(visita);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateVisita = async (data: VisitaFormData) => {
+    if (editingVisita) {
+      await atualizarVisita(editingVisita.id, data);
+      setIsEditModalOpen(false);
+      setEditingVisita(null);
+      carregarVisitas();
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -55,9 +68,15 @@ export const VisitasPage = () => {
     }
   };
 
-  const handleMarkAsCompleted = (id: string) => {
+  const handleMarkAsCompleted = async (id: string) => {
     if (window.confirm('Marcar esta visita como realizada?')) {
-      marcarComoRealizada(id);
+      try {
+        await marcarComoRealizada(id);
+        carregarVisitas(); // Recarregar a lista após marcar como realizada
+      } catch (error) {
+        console.error('Erro ao marcar visita como realizada:', error);
+        alert('Erro ao marcar visita como realizada. Tente novamente.');
+      }
     }
   };
 
@@ -150,13 +169,32 @@ export const VisitasPage = () => {
             <VisitaCard
               key={visita.id}
               visita={visita}
+              onMarkAsCompleted={handleMarkAsCompleted}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onMarkAsCompleted={handleMarkAsCompleted}
+              isAdmin={isAdmin}
             />
           ))}
         </div>
       )}
+
+      <VisitaModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingVisita(null);
+        }}
+        onSubmit={handleUpdateVisita}
+        empreendimento={editingVisita?.empreendimento || ''}
+        empreendimentos={empreendimentos}
+        initialData={editingVisita ? {
+          corretor: editingVisita.corretor,
+          empreendimento: editingVisita.empreendimento,
+          data: editingVisita.data,
+          horario: editingVisita.horario,
+          observacoes: editingVisita.observacoes || ''
+        } : undefined}
+      />
     </main>
   );
 };
