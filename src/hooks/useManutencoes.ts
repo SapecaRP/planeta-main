@@ -18,7 +18,11 @@ export function useManutencoes() {
       
       const { data, error } = await supabase
         .from('manutencoes')
-        .select('*')
+        .select(`
+          *,
+          empreendimentos(nome),
+          usuarios(nome)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -27,11 +31,11 @@ export function useManutencoes() {
 
       const manutencoesFormatadas = data.map(item => ({
         id: item.id,
-        empreendimento: item.empreendimento_id,
+        empreendimento: item.empreendimentos?.nome || 'Empreendimento não encontrado',
         descricao: item.descricao,
         status: item.status,
         prioridade: item.prioridade,
-        gerente: item.gerente_id,
+        gerente: item.usuarios?.nome || 'Gerente não encontrado',
         criadoEm: item.created_at.split('T')[0],
         concluidoEm: item.concluido_em?.split('T')[0],
         fotos: item.fotos || []
@@ -47,17 +51,40 @@ export function useManutencoes() {
     }
   };
 
-  const criarManutencao = async (dados: ManutencaoFormData) => {
+  const criarManutencao = async (dados: ManutencaoFormData & { fotos?: string[] }) => {
     try {
+      // Buscar o ID do empreendimento pelo nome
+      const { data: empreendimentoData, error: empreendimentoError } = await supabase
+        .from('empreendimentos')
+        .select('id')
+        .eq('nome', dados.empreendimento)
+        .single();
+
+      if (empreendimentoError) {
+        throw new Error(`Empreendimento não encontrado: ${dados.empreendimento}`);
+      }
+
+      // Buscar o ID do gerente pelo nome
+      const { data: gerenteData, error: gerenteError } = await supabase
+        .from('usuarios')
+        .select('id')
+        .eq('nome', dados.gerente)
+        .single();
+
+      if (gerenteError) {
+        throw new Error(`Gerente não encontrado: ${dados.gerente}`);
+      }
+
       const { data, error } = await supabase
         .from('manutencoes')
         .insert([
           {
-            empreendimento_id: dados.empreendimento,
+            empreendimento_id: empreendimentoData.id,
             descricao: dados.descricao,
             status: 'pendente',
             prioridade: dados.prioridade,
-            gerente_id: dados.gerente
+            gerente_id: gerenteData.id,
+            fotos: dados.fotos || []
           }
         ])
         .select()
@@ -67,11 +94,11 @@ export function useManutencoes() {
 
       const novaManutencao: Manutencao = {
         id: data.id,
-        empreendimento: data.empreendimento_id,
+        empreendimento: dados.empreendimento,
         descricao: data.descricao,
         status: data.status,
         prioridade: data.prioridade,
-        gerente: data.gerente_id,
+        gerente: dados.gerente,
         criadoEm: data.created_at.split('T')[0],
         fotos: data.fotos || []
       };
@@ -92,6 +119,7 @@ export function useManutencoes() {
       if (dados.descricao) dadosAtualizados.descricao = dados.descricao;
       if (dados.prioridade) dadosAtualizados.prioridade = dados.prioridade;
       if (dados.gerente) dadosAtualizados.gerente_id = dados.gerente;
+      if (dados.fotos !== undefined) dadosAtualizados.fotos = dados.fotos;
       
       // Se estiver concluindo a manutenção
       if (dados.status === 'concluida') {
@@ -107,13 +135,26 @@ export function useManutencoes() {
         
       if (error) throw error;
       
+      // Buscar os nomes atualizados
+      const { data: empreendimentoData } = await supabase
+        .from('empreendimentos')
+        .select('nome')
+        .eq('id', data.empreendimento_id)
+        .single();
+      
+      const { data: gerenteData } = await supabase
+        .from('usuarios')
+        .select('nome')
+        .eq('id', data.gerente_id)
+        .single();
+
       const manutencaoAtualizada: Manutencao = {
         id: data.id,
-        empreendimento: data.empreendimento_id,
+        empreendimento: empreendimentoData?.nome || 'Empreendimento não encontrado',
         descricao: data.descricao,
         status: data.status,
         prioridade: data.prioridade,
-        gerente: data.gerente_id,
+        gerente: gerenteData?.nome || 'Gerente não encontrado',
         criadoEm: data.created_at.split('T')[0],
         concluidoEm: data.concluido_em?.split('T')[0],
         fotos: data.fotos || []
@@ -148,13 +189,26 @@ export function useManutencoes() {
         
       if (error) throw error;
       
+      // Buscar os nomes atualizados
+      const { data: empreendimentoData } = await supabase
+        .from('empreendimentos')
+        .select('nome')
+        .eq('id', data.empreendimento_id)
+        .single();
+      
+      const { data: gerenteData } = await supabase
+        .from('usuarios')
+        .select('nome')
+        .eq('id', data.gerente_id)
+        .single();
+
       const manutencaoAtualizada: Manutencao = {
         id: data.id,
-        empreendimento: data.empreendimento_id,
+        empreendimento: empreendimentoData?.nome || 'Empreendimento não encontrado',
         descricao: data.descricao,
         status: data.status,
         prioridade: data.prioridade,
-        gerente: data.gerente_id,
+        gerente: gerenteData?.nome || 'Gerente não encontrado',
         criadoEm: data.created_at.split('T')[0],
         concluidoEm: data.concluido_em?.split('T')[0],
         fotos: data.fotos || []

@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAtribuicoes } from '../hooks/useAtribuicoes';
 import { Manutencao, ManutencaoFormData } from '../types';
 import { ManutencaoModal } from '../components/ManutencaoModal';
+import { ManutencaoViewModal } from '../components/ManutencaoViewModal';
 
 export function ManutencoesPage() {
   const { user } = useAuth();
@@ -26,6 +27,10 @@ export function ManutencoesPage() {
   const [filtroStatus, setFiltroStatus] = useState('');
   const [filtroData, setFiltroData] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedManutencao, setSelectedManutencao] = useState<Manutencao | null>(null);
+  const [editingManutencao, setEditingManutencao] = useState<Manutencao | null>(null);
 
   const isAdmin = user?.cargo === 'Administrador';
 
@@ -67,11 +72,13 @@ export function ManutencoesPage() {
   };
 
   const handleEdit = (manutencao: Manutencao) => {
-    console.log('Editar manutenção:', manutencao);
+    setEditingManutencao(manutencao);
+    setIsEditModalOpen(true);
   };
 
   const handleView = (manutencao: Manutencao) => {
-    console.log('Visualizar manutenção:', manutencao);
+    setSelectedManutencao(manutencao);
+    setIsViewModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
@@ -80,9 +87,15 @@ export function ManutencoesPage() {
     }
   };
 
-  const handleComplete = (id: string) => {
+  const handleComplete = async (id: string) => {
     if (window.confirm('Marcar esta manutenção como concluída?')) {
-      concluirManutencao(id);
+      try {
+        await concluirManutencao(id);
+        carregarManutencoes(); // Recarregar a lista após concluir
+      } catch (error) {
+        console.error('Erro ao concluir manutenção:', error);
+        alert('Erro ao concluir manutenção. Tente novamente.');
+      }
     }
   };
 
@@ -91,7 +104,17 @@ export function ManutencoesPage() {
       ...data,
       gerente: user?.nome || 'Desconhecido',
     });
+    setIsModalOpen(false);
     carregarManutencoes();
+  };
+
+  const handleUpdateManutencao = async (data: ManutencaoFormData & { fotos?: string[] }) => {
+    if (editingManutencao) {
+      await atualizarManutencao(editingManutencao.id, data);
+      setIsEditModalOpen(false);
+      setEditingManutencao(null);
+      carregarManutencoes();
+    }
   };
 
   if (loading || loadingAtribuicoes) {
@@ -208,7 +231,8 @@ export function ManutencoesPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onView={handleView}
-              onComplete={!isAdmin ? handleComplete : undefined}
+              onComplete={handleComplete}
+              isAdmin={isAdmin}
             />
           ))}
         </div>
@@ -219,6 +243,31 @@ export function ManutencoesPage() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmitManutencao}
         empreendimentos={isAdmin ? empreendimentos : meusEmpreendimentos.map(e => e.nome)}
+      />
+
+      <ManutencaoViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setSelectedManutencao(null);
+        }}
+        manutencao={selectedManutencao}
+      />
+
+      <ManutencaoModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingManutencao(null);
+        }}
+        onSubmit={handleUpdateManutencao}
+        empreendimentos={isAdmin ? empreendimentos : meusEmpreendimentos.map(e => e.nome)}
+        initialData={editingManutencao ? {
+          empreendimento: editingManutencao.empreendimento,
+          descricao: editingManutencao.descricao,
+          prioridade: editingManutencao.prioridade as 'baixa' | 'media' | 'alta',
+          fotos: editingManutencao.fotos || []
+        } : undefined}
       />
     </main>
   );

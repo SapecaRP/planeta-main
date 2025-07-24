@@ -8,9 +8,11 @@ interface VisitaModalProps {
   onSubmit: (dados: VisitaFormData) => void;
   empreendimento: string;
   visita?: Visita;
+  initialData?: VisitaFormData;
+  empreendimentos?: string[];
 }
 
-export function VisitaModal({ isOpen, onClose, onSubmit, empreendimento, visita }: VisitaModalProps) {
+export function VisitaModal({ isOpen, onClose, onSubmit, empreendimento, visita, initialData, empreendimentos }: VisitaModalProps) {
   const [formData, setFormData] = useState<VisitaFormData>({
     corretor: '',
     empreendimento: empreendimento,
@@ -22,7 +24,15 @@ export function VisitaModal({ isOpen, onClose, onSubmit, empreendimento, visita 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
-    if (visita) {
+    if (initialData) {
+      setFormData({
+        corretor: initialData.corretor,
+        empreendimento: initialData.empreendimento,
+        data: initialData.data,
+        horario: initialData.horario,
+        observacoes: initialData.observacoes || ''
+      });
+    } else if (visita) {
       setFormData({
         corretor: visita.corretor,
         empreendimento: visita.empreendimento,
@@ -40,7 +50,7 @@ export function VisitaModal({ isOpen, onClose, onSubmit, empreendimento, visita 
       });
     }
     setErrors({});
-  }, [visita, empreendimento, isOpen]);
+  }, [visita, empreendimento, initialData, isOpen]);
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -88,7 +98,7 @@ export function VisitaModal({ isOpen, onClose, onSubmit, empreendimento, visita 
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-900">
-            Agendar Visita - {empreendimento}
+            {initialData || visita ? 'Editar Visita' : `Agendar Visita - ${empreendimento}`}
           </h2>
           <button
             onClick={onClose}
@@ -103,9 +113,23 @@ export function VisitaModal({ isOpen, onClose, onSubmit, empreendimento, visita 
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Empreendimento
             </label>
-            <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">
-              {empreendimento}
-            </div>
+            {empreendimentos && empreendimentos.length > 0 ? (
+              <select
+                name="empreendimento"
+                value={formData.empreendimento}
+                onChange={(e) => setFormData(prev => ({ ...prev, empreendimento: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              >
+                <option value="">Selecione um empreendimento</option>
+                {empreendimentos.map(emp => (
+                  <option key={emp} value={emp}>{emp}</option>
+                ))}
+              </select>
+            ) : (
+              <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-gray-700">
+                {formData.empreendimento || empreendimento}
+              </div>
+            )}
           </div>
 
           <div>
@@ -180,7 +204,7 @@ export function VisitaModal({ isOpen, onClose, onSubmit, empreendimento, visita 
               type="submit"
               className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
             >
-              Agendar Visita
+              {initialData || visita ? 'Atualizar Visita' : 'Agendar Visita'}
             </button>
           </div>
         </form>

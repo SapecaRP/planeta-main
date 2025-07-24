@@ -16,6 +16,7 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
     tipoServico: 'Manutenção'
   });
 
+  const [outroTipoServico, setOutroTipoServico] = useState('');
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
@@ -25,12 +26,19 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
         telefone: contato.telefone,
         tipoServico: contato.tipoServico
       });
+      // Se o tipo de serviço não está nas opções padrão, assume que é "Outros"
+      const tiposServicoPadrao = ['Manutenção', 'Limpeza', 'Elétrica', 'Hidráulica', 'Pintura', 'Jardinagem', 'Segurança', 'Facilities'];
+      if (!tiposServicoPadrao.includes(contato.tipoServico)) {
+        setOutroTipoServico(contato.tipoServico);
+        setFormData(prev => ({ ...prev, tipoServico: 'Outros' }));
+      }
     } else {
       setFormData({
         nome: '',
         telefone: '',
         tipoServico: 'Manutenção'
       });
+      setOutroTipoServico('');
     }
     setErrors({});
   }, [contato, isOpen]);
@@ -50,6 +58,10 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
       newErrors.tipoServico = 'Tipo de serviço é obrigatório';
     }
 
+    if (formData.tipoServico === 'Outros' && !outroTipoServico.trim()) {
+      newErrors.outroTipoServico = 'Especifique o tipo de serviço';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -61,17 +73,59 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
       return;
     }
 
-    onSubmit(formData);
+    const dadosParaEnviar = {
+      ...formData,
+      tipoServico: formData.tipoServico === 'Outros' ? outroTipoServico : formData.tipoServico
+    };
+
+    onSubmit(dadosParaEnviar as ContatoFormData);
     onClose();
+  };
+
+  const formatTelefone = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const numbers = value.replace(/\D/g, '');
+    
+    // Aplica a máscara baseada no tamanho
+    if (numbers.length <= 2) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 2)} ${numbers.slice(2)}`;
+    } else if (numbers.length <= 11) {
+      return `${numbers.slice(0, 2)} ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+    } else {
+      // Limita a 11 dígitos (DDD + 9 dígitos)
+      return `${numbers.slice(0, 2)} ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'telefone') {
+      const formattedValue = formatTelefone(value);
+      setFormData(prev => ({ ...prev, [name]: formattedValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
+    // Limpar campo "Outros" quando mudar para outro tipo de serviço
+    if (name === 'tipoServico' && value !== 'Outros') {
+      setOutroTipoServico('');
+    }
     
     // Limpar erro do campo quando o usuário começar a digitar
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleOutroTipoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOutroTipoServico(e.target.value);
+    
+    // Limpar erro do campo quando o usuário começar a digitar
+    if (errors.outroTipoServico) {
+      setErrors(prev => ({ ...prev, outroTipoServico: '' }));
     }
   };
 
@@ -124,7 +178,7 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
                 errors.telefone ? 'border-red-300' : 'border-gray-300'
               }`}
-              placeholder="(11) 99999-9999"
+              placeholder="15 99196-9581"
             />
             {errors.telefone && <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.telefone}</p>}
           </div>
@@ -150,10 +204,30 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
               <option value="Pintura">Pintura</option>
               <option value="Jardinagem">Jardinagem</option>
               <option value="Segurança">Segurança</option>
+              <option value="Facilities">Facilities</option>
               <option value="Outros">Outros</option>
             </select>
             {errors.tipoServico && <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.tipoServico}</p>}
           </div>
+
+          {formData.tipoServico === 'Outros' && (
+            <div>
+              <label htmlFor="outroTipoServico" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                Especifique o tipo de serviço
+              </label>
+              <input
+                type="text"
+                id="outroTipoServico"
+                value={outroTipoServico}
+                onChange={handleOutroTipoChange}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                  errors.outroTipoServico ? 'border-red-300' : 'border-gray-300'
+                }`}
+                placeholder="Digite o tipo de serviço"
+              />
+              {errors.outroTipoServico && <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.outroTipoServico}</p>}
+            </div>
+          )}
 
           <div className="pt-4">
             <button
