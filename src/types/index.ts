@@ -48,7 +48,8 @@ export interface Contato {
   id: string;
   nome: string;
   telefone: string;
-  tipoServico: 'Manutenção' | 'Limpeza' | 'Elétrica' | 'Hidráulica' | 'Pintura' | 'Jardinagem' | 'Segurança' | 'Outros';
+  tipoServico: 'Manutenção' | 'Limpeza' | 'Elétrica' | 'Hidráulica' | 'Pintura' | 'Jardinagem' | 'Segurança' | 'Facilities' | 'Outros';
+  tipoServicoPersonalizado?: string;
   criadoEm: string;
   atualizadoEm: string;
 }
@@ -56,7 +57,8 @@ export interface Contato {
 export interface ContatoFormData {
   nome: string;
   telefone: string;
-  tipoServico: 'Manutenção' | 'Limpeza' | 'Elétrica' | 'Hidráulica' | 'Pintura' | 'Jardinagem' | 'Segurança' | 'Outros';
+  tipoServico: 'Manutenção' | 'Limpeza' | 'Elétrica' | 'Hidráulica' | 'Pintura' | 'Jardinagem' | 'Segurança' | 'Facilities' | 'Outros';
+  tipoServicoPersonalizado?: string;
 }
 
 export interface Manutencao {

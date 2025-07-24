@@ -25,7 +25,8 @@ export function ManutencoesPage() {
   const [filtroEmpreendimento, setFiltroEmpreendimento] = useState('');
   const [filtroGerente, setFiltroGerente] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('');
-  const [filtroData, setFiltroData] = useState('');
+  const [filtroDataInicio, setFiltroDataInicio] = useState('');
+  const [filtroDataFim, setFiltroDataFim] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -56,11 +57,14 @@ export function ManutencoesPage() {
       const matchesEmpreendimento = !filtroEmpreendimento || manutencao.empreendimento === filtroEmpreendimento;
       const matchesGerente = !filtroGerente || manutencao.gerente === filtroGerente;
       const matchesStatus = !filtroStatus || manutencao.status === filtroStatus;
-      const matchesData = !filtroData || manutencao.criadoEm === filtroData;
+      
+      // Filtro de período de datas
+      const matchesDataInicio = !filtroDataInicio || manutencao.criadoEm >= filtroDataInicio;
+      const matchesDataFim = !filtroDataFim || manutencao.criadoEm <= filtroDataFim;
 
-      return matchesSearch && matchesEmpreendimento && matchesGerente && matchesStatus && matchesData;
+      return matchesSearch && matchesEmpreendimento && matchesGerente && matchesStatus && matchesDataInicio && matchesDataFim;
     });
-  }, [manutencoesPermitidas, searchTerm, filtroEmpreendimento, filtroGerente, filtroStatus, filtroData]);
+  }, [manutencoesPermitidas, searchTerm, filtroEmpreendimento, filtroGerente, filtroStatus, filtroDataInicio, filtroDataFim]);
 
   const empreendimentos = [...new Set(manutencoesPermitidas.map(m => m.empreendimento))];
   const gerentes = [...new Set(manutencoesPermitidas.map(m => m.gerente))];
@@ -157,7 +161,7 @@ export function ManutencoesPage() {
             <h3 className="text-lg font-medium text-gray-900">Filtros</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div>
               <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Buscar..." />
             </div>
@@ -205,8 +209,19 @@ export function ManutencoesPage() {
             <div>
               <input
                 type="date"
-                value={filtroData}
-                onChange={(e) => setFiltroData(e.target.value)}
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                placeholder="Data início"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+
+            <div>
+              <input
+                type="date"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+                placeholder="Data fim"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
@@ -217,7 +232,7 @@ export function ManutencoesPage() {
       {manutencoesFiltradas.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500">
-            {searchTerm || filtroEmpreendimento || filtroGerente || filtroStatus || filtroData
+            {searchTerm || filtroEmpreendimento || filtroGerente || filtroStatus || filtroDataInicio || filtroDataFim
               ? 'Nenhuma manutenção encontrada com os filtros aplicados'
               : 'Nenhuma manutenção cadastrada'}
           </p>

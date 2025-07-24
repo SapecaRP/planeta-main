@@ -15,7 +15,8 @@ export const VisitasPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEmpreendimento, setFiltroEmpreendimento] = useState('');
   const [filtroCorretor, setFiltroCorretor] = useState('');
-  const [filtroData, setFiltroData] = useState('');
+  const [filtroDataInicio, setFiltroDataInicio] = useState('');
+  const [filtroDataFim, setFiltroDataFim] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingVisita, setEditingVisita] = useState<Visita | null>(null);
 
@@ -39,14 +40,36 @@ export const VisitasPage = () => {
       const matchesSearch = visita.corretor.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             visita.empreendimento.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesEmpreendimento = !filtroEmpreendimento || visita.empreendimento === filtroEmpreendimento;
-      const matchesCorretor = !filtroCorretor || visita.corretor === filtroCorretor;
-      const matchesData = !filtroData || visita.data === filtroData;
+      // Verificar se o filtro de gerente corresponde ao gerente responsável pelo empreendimento
+      const gerenteResponsavel = atribuicoes.find(a => 
+        a.empreendimentos.some(emp => emp.nome === visita.empreendimento)
+      )?.gerenteNome;
+      const matchesCorretor = !filtroCorretor || gerenteResponsavel === filtroCorretor;
+      // Verificar se a data da visita está dentro do período selecionado
+      const dataVisita = new Date(visita.data);
+      const matchesDataInicio = !filtroDataInicio || dataVisita >= new Date(filtroDataInicio);
+      const matchesDataFim = !filtroDataFim || dataVisita <= new Date(filtroDataFim);
+      const matchesData = matchesDataInicio && matchesDataFim;
       return matchesSearch && matchesEmpreendimento && matchesCorretor && matchesData;
     });
-  }, [visitasPermitidas, searchTerm, filtroEmpreendimento, filtroCorretor, filtroData]);
+  }, [visitasPermitidas, searchTerm, filtroEmpreendimento, filtroCorretor, filtroDataInicio, filtroDataFim]);
 
   const empreendimentos = [...new Set(visitasPermitidas.map(v => v.empreendimento))];
-  const corretores = [...new Set(visitasPermitidas.map(v => v.corretor))];
+  
+  // Obter gerentes responsáveis pelos empreendimentos das visitas
+  const gerentes = useMemo(() => {
+    const gerentesSet = new Set<string>();
+    visitasPermitidas.forEach(visita => {
+      // Encontrar o gerente responsável pelo empreendimento da visita
+      const atribuicao = atribuicoes.find(a => 
+        a.empreendimentos.some(emp => emp.nome === visita.empreendimento)
+      );
+      if (atribuicao) {
+        gerentesSet.add(atribuicao.gerenteNome);
+      }
+    });
+    return Array.from(gerentesSet);
+  }, [visitasPermitidas, atribuicoes]);
 
   const handleEdit = (visita: Visita) => {
     setEditingVisita(visita);
@@ -105,7 +128,7 @@ export const VisitasPage = () => {
             <h3 className="text-lg font-medium text-gray-900">Filtros</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <SearchBar
                 value={searchTerm}
@@ -135,8 +158,8 @@ export const VisitasPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 >
                   <option value="">Todos os Gerentes</option>
-                  {corretores.map(corretor => (
-                    <option key={corretor} value={corretor}>{corretor}</option>
+                  {gerentes.map(gerente => (
+                    <option key={gerente} value={gerente}>{gerente}</option>
                   ))}
                 </select>
               </div>
@@ -145,10 +168,20 @@ export const VisitasPage = () => {
             <div>
               <input
                 type="date"
-                value={filtroData}
-                onChange={(e) => setFiltroData(e.target.value)}
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                placeholder="Data início"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                placeholder="dd/mm/aaaa"
+              />
+            </div>
+
+            <div>
+              <input
+                type="date"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+                placeholder="Data fim"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               />
             </div>
           </div>
@@ -158,7 +191,7 @@ export const VisitasPage = () => {
       {visitasFiltradas.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-500">
-            {searchTerm || filtroEmpreendimento || filtroCorretor || filtroData 
+            {searchTerm || filtroEmpreendimento || filtroCorretor || filtroDataInicio || filtroDataFim 
               ? 'Nenhuma visita encontrada com os filtros aplicados' 
               : 'Nenhuma visita agendada'}
           </p>

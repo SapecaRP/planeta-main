@@ -26,11 +26,9 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
         telefone: contato.telefone,
         tipoServico: contato.tipoServico
       });
-      // Se o tipo de serviço não está nas opções padrão, assume que é "Outros"
-      const tiposServicoPadrao = ['Manutenção', 'Limpeza', 'Elétrica', 'Hidráulica', 'Pintura', 'Jardinagem', 'Segurança', 'Facilities'];
-      if (!tiposServicoPadrao.includes(contato.tipoServico)) {
-        setOutroTipoServico(contato.tipoServico);
-        setFormData(prev => ({ ...prev, tipoServico: 'Outros' }));
+      // Se o tipo de serviço é "Outros" e há um tipo personalizado, carregá-lo
+      if (contato.tipoServico === 'Outros' && contato.tipoServicoPersonalizado) {
+        setOutroTipoServico(contato.tipoServicoPersonalizado);
       }
     } else {
       setFormData({
@@ -75,7 +73,8 @@ export function ContatoModal({ isOpen, onClose, onSubmit, contato }: ContatoModa
 
     const dadosParaEnviar = {
       ...formData,
-      tipoServico: formData.tipoServico === 'Outros' ? outroTipoServico : formData.tipoServico
+      tipoServico: formData.tipoServico === 'Outros' ? 'Outros' : formData.tipoServico,
+      tipoServicoPersonalizado: formData.tipoServico === 'Outros' ? outroTipoServico : undefined
     };
 
     onSubmit(dadosParaEnviar as ContatoFormData);

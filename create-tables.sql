@@ -26,6 +26,7 @@ CREATE TABLE public.contatos (
   nome text NOT NULL,
   telefone text NOT NULL,
   tipo_servico public.tipo_servico NOT NULL DEFAULT 'Manutenção'::tipo_servico,
+  tipo_servico_personalizado text NULL,
   created_at timestamp with time zone NULL DEFAULT now(),
   updated_at timestamp with time zone NULL DEFAULT now(),
   CONSTRAINT contatos_pkey PRIMARY KEY (id)

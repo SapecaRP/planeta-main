@@ -54,7 +54,9 @@ export function ContatoCard({ contato, onEdit, onDelete, readOnly = false }: Con
             <span className="text-xs sm:text-sm">{contato.telefone}</span>
           </div>
           <span className={`inline-flex flex-wrap items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTipoServicoColor(contato.tipoServico)}`}>
-            {contato.tipoServico}
+            {contato.tipoServico === 'Outros' && contato.tipoServicoPersonalizado 
+              ? `Outros - ${contato.tipoServicoPersonalizado}` 
+              : contato.tipoServico}
           </span>
         </div>
         {!readOnly && (

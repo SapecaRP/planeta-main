@@ -21,7 +21,8 @@ export function useContatos() {
     } else {
       const contatosConvertidos = data.map((c: any) => ({
         ...c,
-        tipoServico: c.tipo_servico // conversão aqui
+        tipoServico: c.tipo_servico, // conversão aqui
+        tipoServicoPersonalizado: c.tipo_servico_personalizado
       }));
       setContatos(contatosConvertidos);
     }
@@ -31,14 +32,21 @@ export function useContatos() {
   const criarContato = async (dados: ContatoFormData) => {
     // Validar se o tipo de serviço é um valor válido do enum
     const tipo_servico = TIPOS_SERVICO_PADRAO.includes(dados.tipoServico as any) ? dados.tipoServico : 'Outros';
+    
+    const payload: any = {
+      nome: dados.nome,
+      telefone: dados.telefone,
+      tipo_servico
+    };
+    
+    // Se for "Outros", salvar o tipo personalizado
+    if (dados.tipoServico === 'Outros' && dados.tipoServicoPersonalizado) {
+      payload.tipo_servico_personalizado = dados.tipoServicoPersonalizado;
+    }
 
     const { data, error } = await supabase
       .from('contatos')
-      .insert([{
-        nome: dados.nome,
-        telefone: dados.telefone,
-        tipo_servico
-      }])
+      .insert([payload])
       .select()
       .single();
 
@@ -59,6 +67,14 @@ export function useContatos() {
     if (dados.telefone) payload.telefone = dados.telefone;
     if (dados.tipoServico) {
       payload.tipo_servico = TIPOS_SERVICO_PADRAO.includes(dados.tipoServico as any) ? dados.tipoServico : 'Outros';
+      
+      // Se for "Outros", salvar o tipo personalizado
+      if (dados.tipoServico === 'Outros' && dados.tipoServicoPersonalizado) {
+        payload.tipo_servico_personalizado = dados.tipoServicoPersonalizado;
+      } else if (dados.tipoServico !== 'Outros') {
+        // Se não for "Outros", limpar o campo personalizado
+        payload.tipo_servico_personalizado = null;
+      }
     }
 
     const { data, error } = await supabase
